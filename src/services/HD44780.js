@@ -3,10 +3,12 @@ const rpio = require('rpio');
 const HD44780 = {
     rpioParams: {
         gpiomem: true,
-	    mapping: 'physical',
-	    close_on_exit: true
+	mapping: 'physical',
+	close_on_exit: true
     },
     pinDefinitions: null,
+    fourBitInterface: 0x20,
+    twoLinesDisplay: 0x08,
     setDataLines: function(nibble) {
         rpio.write(this.pinDefinitions.D4, (nibble & (1 << 0)) ? rpio.HIGH : rpio.LOW);
         rpio.write(this.pinDefinitions.D5, (nibble & (1 << 1)) ? rpio.HIGH : rpio.LOW);
@@ -34,7 +36,7 @@ const HD44780 = {
         this.sendCommand(0x02);
 
         /* Initialize display */
-        this.sendCommand(0x28); // 2 lines, 5*8 font, 4-bit
+        this.sendCommand(this.fourBitInterface | this.twoLinesDisplay);
         this.sendCommand(0x0C); // Display on, cursor off, blink off
         this.sendCommand(0x06); // Increase cursor position, scroll on
 
@@ -83,7 +85,7 @@ const HD44780 = {
                 this.sendCommand(0xC0 + column - 1);
                 break;
             default:
-                console.log('This display supports only two rows, ordered from 1!');
+                console.log('This display supports only two rows, ranging from 1 to 2!');
         }
     },
     clear: function() {
@@ -91,7 +93,23 @@ const HD44780 = {
         this.sendCommand(0x80); // Go to first row, first column
     },
     setBrightness: function (level) {
-
+	const constantValue = this.fourBitInterface | this.twoLinesDisplay; // Register that controls brightness controls also data bus width and number of the display lines - don't change these settings
+	switch(level) {
+            case 1:
+                this.sendCommand(constantValue | 0x03);
+                break;
+            case 2:
+                this.sendCommand(constantValue | 0x02);
+                break;
+            case 3:
+                this.sendCommand(constantValue | 0x01);
+		break;
+            case 4:
+                this.sendCommand(constantValue);
+		break;
+	    default:
+		console.log('This display has only 4 levels of brightness, ranging from 1 to 4!');
+   	}
     }
 }
 
