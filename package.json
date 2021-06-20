@@ -1,0 +1,16 @@
+{
+  "name": "info-on-vfd",
+  "version": "1.0.0",
+  "description": "Show some info from sites like worldometer on Futaba VFD display",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon ./src/index.js"
+  },
+  "author": "Lefucjusz",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "rpio": "^2.4.2",
+    "xml2js": "^0.4.23"
+  }
+}
