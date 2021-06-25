@@ -3,8 +3,8 @@ const rpio = require('rpio');
 const HD44780 = {
     rpioParams: {
         gpiomem: true,
-	mapping: 'physical',
-	close_on_exit: true
+	    mapping: 'physical',
+	    close_on_exit: true
     },
     pinDefinitions: null,
     fourBitInterface: 0x20,
@@ -39,8 +39,9 @@ const HD44780 = {
         this.sendCommand(this.fourBitInterface | this.twoLinesDisplay);
         this.sendCommand(0x0C); // Display on, cursor off, blink off
         this.sendCommand(0x06); // Increase cursor position, scroll on
-
-        this.clear();
+        
+	    this.loadPolishDiacritics();
+	    this.clear();
     },
     sendByte: function(byte) {
         try {
@@ -92,24 +93,129 @@ const HD44780 = {
         this.sendCommand(0x01); // Clear display
         this.sendCommand(0x80); // Go to first row, first column
     },
-    setBrightness: function (level) {
-	const constantValue = this.fourBitInterface | this.twoLinesDisplay; // Register that controls brightness controls also data bus width and number of the display lines - don't change these settings
-	switch(level) {
+    setBrightness: function(level) {
+        const constantValue = this.fourBitInterface | this.twoLinesDisplay; // Register that controls brightness controls also data bus width and number of the display lines - don't change these settings
+        switch(level) {
             case 1:
                 this.sendCommand(constantValue | 0x03);
-                break;
+            break;
             case 2:
                 this.sendCommand(constantValue | 0x02);
-                break;
+            break;
             case 3:
                 this.sendCommand(constantValue | 0x01);
-		break;
+            break;
             case 4:
                 this.sendCommand(constantValue);
-		break;
-	    default:
-		console.log('This display has only 4 levels of brightness, ranging from 1 to 4!');
-   	}
+            break;
+            default:
+            console.log('This display has only 4 levels of brightness, ranging from 1 to 4!');
+        }
+    },
+    loadChar: function (CGRAMAddress, pixelArray) {
+        /* Validate input data */
+        if(CGRAMAddress < 0 || CGRAMAddress > 7) {
+            console.log('This display supports only 8 custom characters, ranging from 0 to 7!');
+            return;
+        }
+        if(pixelArray.length != 8) {
+            console.log('Improper pixelArray format - should be 8 bytes, one for each dot matrix line!');
+            return;
+        }
+
+        const setFirstCGRAMAddress = 0x40;
+        this.sendCommand(setFirstCGRAMAddress + (CGRAMAddress * 8)); // Each char uses 8 bytes
+        for(let i = 0; i < 8; i++) {
+            this.sendChar(pixelArray[i]); // Store each line in CGRAM
+        }
+    },
+    loadPolishDiacritics: function() {
+        const byteCodes = [
+            [ //ą
+                0b00000,
+                0b01110,
+                0b00001,
+                0b01111,
+                0b10001,
+                0b01111,
+                0b00010,
+                0b00001
+            ],
+            [ //ć
+                0b00010,
+                0b00100,
+                0b01110,
+                0b10000,
+                0b10000,
+                0b10001,
+                0b01110,
+                0b00000
+            ],
+            [ //ę
+                0b00000,
+                0b01110,
+                0b10001,
+                0b11111,
+                0b10000,
+                0b01110,
+                0b00100,
+                0b00010
+            ],
+            [ //ł
+                0b01100,
+                0b00100,
+                0b00110,
+                0b00100,
+                0b01100,
+                0b00100,
+                0b01110,
+                0b00000
+            ],
+            [ //ń
+                0b00010,
+                0b00100,
+                0b10110,
+                0b11001,
+                0b10001,
+                0b10001,
+                0b10001,
+                0b00000
+            ],
+            [ //ó
+                0b00010,
+                0b00100,
+                0b01110,
+                0b10001,
+                0b10001,
+                0b10001,
+                0b01110,
+                0b00000
+            ],
+            [ //ś
+                0b00010,
+                0b00100,
+                0b01110,
+                0b10000,
+                0b01110,
+                0b00001,
+                0b11110,
+                0b00000
+            ],
+            [ //ż
+                0b00000,
+                0b00010,
+                0b11111,
+                0b00010,
+                0b00100,
+                0b01000,
+                0b11111,
+                0b00000
+            ]
+        ];
+
+        for(let i = 0; i < byteCodes.length; i++) {
+            this.loadChar(i, byteCodes[i]);
+        }
     }
 }
 

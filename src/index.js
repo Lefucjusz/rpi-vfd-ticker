@@ -1,6 +1,5 @@
 const scraper = require('./services/scraper');
 const buffer = require('./services/buffer');
-const HD44780 = require('./services/HD44780');
 
 async function start() {
     buffer.init(2, 20);

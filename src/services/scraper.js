@@ -10,16 +10,18 @@ const scraper = {
         const dateAsString = `${extractedDate} ${extractedTime}`;
         return dateAsString;
     },
-    removeDiacritics: function(string) {
-        return string.replace(/ą/g, 'a').replace(/Ą/g, 'A')
-        .replace(/ć/g, 'c').replace(/Ć/g, 'C')
-        .replace(/ę/g, 'e').replace(/Ę/g, 'E')
-        .replace(/ł/g, 'l').replace(/Ł/g, 'L')
-        .replace(/ń/g, 'n').replace(/Ń/g, 'N')
-        .replace(/ó/g, 'o').replace(/Ó/g, 'O')
-        .replace(/ś/g, 's').replace(/Ś/g, 'S')
-        .replace(/ż/g, 'z').replace(/Ż/g, 'Z')
-        .replace(/ź/g, 'z').replace(/Ź/g, 'Z');
+    mapDiacritics: function(string) {
+        /* Definitions in display's CGRAM, see HD44780.js -> loadPolishDiacritics() */
+        /* No capitals and 'ź' because of only 8 custom characters available :( */ 
+        return string.replace(/ą/g, String.fromCharCode(0x00)).replace(/Ą/g, String.fromCharCode(0x00))
+        .replace(/ć/g, String.fromCharCode(0x01)).replace(/Ć/g, String.fromCharCode(0x01))
+        .replace(/ę/g, String.fromCharCode(0x02)).replace(/Ę/g, String.fromCharCode(0x02))
+        .replace(/ł/g, String.fromCharCode(0x03)).replace(/Ł/g, String.fromCharCode(0x03))
+        .replace(/ń/g, String.fromCharCode(0x04)).replace(/Ń/g, String.fromCharCode(0x04))
+        .replace(/ó/g, String.fromCharCode(0x05)).replace(/Ó/g, String.fromCharCode(0x05))
+        .replace(/ś/g, String.fromCharCode(0x06)).replace(/Ś/g, String.fromCharCode(0x06))
+        .replace(/ż/g, String.fromCharCode(0x07)).replace(/Ż/g, String.fromCharCode(0x07))
+        .replace(/ź/g, String.fromCharCode(0x07)).replace(/Ź/g, String.fromCharCode(0x07)); 
     },
     requestAndParseData: async function() {
         try {
@@ -52,7 +54,7 @@ const scraper = {
                 this.newsString += `${descriptionText} `
             }
 
-            return this.removeDiacritics(this.newsString);
+            return this.mapDiacritics(this.newsString);
         } catch(error) {
             console.log(error);
         }

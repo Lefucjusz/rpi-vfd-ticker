@@ -21,7 +21,7 @@ const buffer = {
         }
 
         HD44780.init(pinDefinitions);
-	HD44780.setBrightness(3); // 75% brightness
+	    HD44780.setBrightness(3); // 75% brightness
     },
     update: function(row, newElement) {
         const offset = (row - 1) * this.columns;
