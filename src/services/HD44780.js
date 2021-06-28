@@ -91,7 +91,9 @@ const HD44780 = {
     },
     clear: function() {
         this.sendCommand(0x01); // Clear display
+		rpio.msleep(1);
         this.sendCommand(0x80); // Go to first row, first column
+		rpio.msleep(1);
     },
     setBrightness: function(level) {
         const constantValue = this.fourBitInterface | this.twoLinesDisplay; // Register that controls brightness controls also data bus width and number of the display lines - don't change these settings
